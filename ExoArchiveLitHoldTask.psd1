@@ -15,7 +15,7 @@
     ModuleVersion     = '0.0.1'
 
     # Supported PSEditions
-    # CompatiblePSEditions = @()
+    CompatiblePSEditions = @('Desk','Core')
 
     # ID used to uniquely identify this module
     GUID              = '072d5e7f-c5d0-440b-982b-455f940b8417'
@@ -33,7 +33,7 @@
     Description       = 'Enable Exchange Online Archive Mailbox and Litigation Hold for eligible users'
 
     # Minimum version of the PowerShell engine required by this module
-    # PowerShellVersion = ''
+    PowerShellVersion = '5.1'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''

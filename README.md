@@ -1,2 +1,2 @@
-# EXO_Archive_LitHold_Task
+# EXOArchiveLitHoldTask
  Enable Exchange Online Archive Mailbox and Litigation Hold for eligible users
