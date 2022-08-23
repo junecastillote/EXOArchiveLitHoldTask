@@ -9,8 +9,8 @@ if ($module.Count -gt 0) {
     foreach ($Moduleinfo in $module) {
         $ModulePath = $Moduleinfo.ModuleBase
         try {
-
             $items = Get-ChildItem $ModulePath -Recurse
+
             # Delete all module files
             foreach ($file in (($items | Where-Object {!$_.PSIsContainer}).FullName)) {
                 # $file
