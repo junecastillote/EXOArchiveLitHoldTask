@@ -58,11 +58,11 @@ if (!$isWindowsOs -and $Scope -eq 'CurrentUser') {
     $ModulePath = "$HOME/.local/share/powershell/Modules"
 }
 # Non-Windows + AllUsers
-if (!$isWindowsOs -and $Scope -eq 'CurrentUser') {
+if (!$isWindowsOs -and $Scope -eq 'AllUsers') {
     $ModulePath = '/usr/local/share/powershell/Modules'
 }
 
-$ModulePath = $ModulePath + "\$($Moduleinfo.Name.ToString())\$($Moduleinfo.Version.ToString())"
+$ModulePath = $ModulePath + "/$($Moduleinfo.Name.ToString())/$($Moduleinfo.Version.ToString())"
 $ModulePath
 
 if (!(Test-Path $ModulePath)) {
@@ -75,7 +75,9 @@ try {
     Write-Output ""
     Write-Output "Success. Installed to $ModulePath"
     Write-Output ""
-    Get-ChildItem -Recurse $ModulePath | Unblock-File -Confirm:$false
+    if ($isWindowsOs) {
+        Get-ChildItem -Recurse $ModulePath | Unblock-File -Confirm:$false
+    }
     Import-Module $($Moduleinfo.Name.ToString()) -Force
 }
 catch {
