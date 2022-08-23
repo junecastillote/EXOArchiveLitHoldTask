@@ -101,7 +101,7 @@
             # LicenseUri = ''
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/junecastillote/EXO_Archive_LitHold_Task'
+            ProjectUri = 'https://github.com/junecastillote/EXOArchiveLitHoldTask'
 
             # A URL to an icon representing this module.
             # IconUri = ''
