@@ -43,9 +43,14 @@ if ($PSEdition -eq 'Core' -and $isWindowsOs -and $Scope -eq 'AllUsers') {
     $ModulePath = "$env:ProgramFiles\PowerShell\Modules"
 }
 
-# Windows + Windows PowerShell + CurrentUser
-if ($PSEdition -eq 'Desktop' -and $isWindowsOs -and $Scope -eq 'CurrentUser') {
+# Windows PowerShell + CurrentUser
+if ($PSEdition -eq 'Desktop' -and $Scope -eq 'CurrentUser') {
     $ModulePath = ([System.IO.Path]::Combine(([Environment]::GetFolderPath("MyDocuments")), 'WindowsPowerShell', 'Modules'))
+}
+
+# Windows PowerShell + AllUsers
+if ($PSEdition -eq 'Desktop' -and $Scope -eq 'AllUsers') {
+    $ModulePath = "$env:ProgramFiles\WindowsPowerShell\Modules"
 }
 
 # Non-Windows + CurrentUser
