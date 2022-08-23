@@ -3,9 +3,9 @@ param (
     [string]$ModulePath
 )
 $moduleManifest = Test-ModuleManifest -Path $((Get-ChildItem -Path $PSScriptRoot -Filter *.psd1).FullName)
-$module = @(Get-Module ($moduleManifest.Name) -ListAvailable) #| Where-Object { $_.Version -eq $moduleManifest.Version })
+$module = Get-Module $($moduleManifest.Name) -ListAvailable #| Where-Object { $_.Version -eq $moduleManifest.Version })
 
-if ($module.Count -gt 0) {
+if ($module) {
     foreach ($Moduleinfo in $module) {
         $ModulePath = $Moduleinfo.ModuleBase
         try {
