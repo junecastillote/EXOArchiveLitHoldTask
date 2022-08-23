@@ -5,23 +5,16 @@ param (
     $Scope
 )
 
-Function isWindows {
-    param()
-    if ([System.Environment]::OSVersion.Platform -eq 'Win32NT') {
-        return $true
-    }
-    else {
-        return $false
-    }
-}
-
 $moduleManifest = Get-ChildItem -Path $PSScriptRoot -Filter *.psd1
 $Moduleinfo = Test-ModuleManifest -Path ($moduleManifest.FullName)
 
 Remove-Module ($Moduleinfo.Name) -ErrorAction SilentlyContinue
 
+
+$isWindowsOs = ([System.Environment]::OSVersion.Platform -eq 'Win32NT')
+
 # Is elevated PS?
-if ($IsWindows) {
+if ($isWindowsOs) {
     ## On Windows
     [bool]$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
@@ -41,26 +34,26 @@ if ($Scope -eq 'AllUsers' -and !$isAdmin ) {
 }
 
 # Windows + PowerShell Core + CurrentUser
-if ($PSEdition -eq 'Core' -and $IsWindows -and $Scope -eq 'CurrentUser') {
+if ($PSEdition -eq 'Core' -and $isWindowsOs -and $Scope -eq 'CurrentUser') {
     $ModulePath = ([System.IO.Path]::Combine(([Environment]::GetFolderPath("MyDocuments")), 'PowerShell', 'Modules'))
 }
 
 # Windows + PowerShell Core + AllUsers
-if ($PSEdition -eq 'Core' -and $IsWindows -and $Scope -eq 'AllUsers') {
+if ($PSEdition -eq 'Core' -and $isWindowsOs -and $Scope -eq 'AllUsers') {
     $ModulePath = "$env:ProgramFiles\PowerShell\Modules"
 }
 
 # Windows + Windows PowerShell + CurrentUser
-if ($PSEdition -eq 'Desktop' -and $IsWindows -and $Scope -eq 'CurrentUser') {
+if ($PSEdition -eq 'Desktop' -and $isWindowsOs -and $Scope -eq 'CurrentUser') {
     $ModulePath = ([System.IO.Path]::Combine(([Environment]::GetFolderPath("MyDocuments")), 'WindowsPowerShell', 'Modules'))
 }
 
 # Non-Windows + CurrentUser
-if (!$IsWindows -and $Scope -eq 'CurrentUser') {
+if (!$isWindowsOs -and $Scope -eq 'CurrentUser') {
     $ModulePath = "$HOME/.local/share/powershell/Modules"
 }
 # Non-Windows + AllUsers
-if (!$IsWindows -and $Scope -eq 'CurrentUser') {
+if (!$isWindowsOs -and $Scope -eq 'CurrentUser') {
     $ModulePath = '/usr/local/share/powershell/Modules'
 }
 
