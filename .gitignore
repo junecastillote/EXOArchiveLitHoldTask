@@ -1,0 +1,4 @@
+testData.ps1
+*.pfx
+*.cer
+selfsigned.ps1
