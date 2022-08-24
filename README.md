@@ -2,6 +2,22 @@
 
 This module enables O365 admins to keep the online archive mailbox and litigation hold enabled for eligible users in Exchange Online.
 
+#
+- [Which Mailboxes are Eligible?](#which-mailboxes-are-eligible)
+- [Download and Install the Module](#download-and-install-the-module)
+- [Functions and Parameters](#functions-and-parameters)
+- [Usage Examples](#usage-examples)
+  - [Example 1: Run in Test Mode with Email Report via Office 365 Authenticated SMTP Relay](#example-1-run-in-test-mode-with-email-report-via-office-365-authenticated-smtp-relay)
+  - [Example 2: Run in Test Mode with Email Report via Microsoft Graph with Secret Key](#example-2-run-in-test-mode-with-email-report-via-microsoft-graph-with-secret-key)
+  - [Example 3: Non-Interactive with App-Only Authentication in Exchange and Send Email via Microsoft Graph](#example-3-non-interactive-with-app-only-authentication-in-exchange-and-send-email-via-microsoft-graph)
+- [ANNEX 1: Sample Report](#annex-1-sample-report)
+  - [HTML Email](#html-email)
+  - [CSV File](#csv-file)
+- [ANNEX 2: Register App for App-Only Authentication in Exchange and Sending Email via Microsoft Graph](#annex-2-register-app-for-app-only-authentication-in-exchange-and-sending-email-via-microsoft-graph)
+  - [Create a Self-Signed Certificate](#create-a-self-signed-certificate)
+  - [Register the App](#register-the-app)
+  - [Grant Consent](#grant-consent)
+
 ## Which Mailboxes are Eligible?
 
 The basis of eligibility is the [Mailbox Plan](https://docs.microsoft.com/en-us/exchange/recipients-in-exchange-online/manage-user-mailboxes/mailbox-plans) assigned to the mailbox, specifically the *`ExchangeOnlineEnterprise`* mailbox plan.
