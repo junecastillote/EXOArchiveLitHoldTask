@@ -2,7 +2,7 @@ Function Enable-ExoLitigationHold {
     [cmdletbinding()]
     Param(
         [parameter()]
-        [boolean]$ListOnly = $true,
+        [boolean]$TestMode = $true,
 
         [parameter()]
         [string[]]$ExclusionList = @(),
@@ -153,8 +153,8 @@ Function Enable-ExoLitigationHold {
     }
     SayInfo "Report Directory: $ReportDirectory"
 
-    if ($ListOnly) {
-        SayInfo "ListOnly is specified. Running on test mode only. No changes will be made."
+    if ($TestMode) {
+        SayInfo "TestMode is specified. Running on test mode only. No changes will be made."
     }
 
     $subject = "Enable Exchange Online Litigation Hold Task Report"
@@ -212,7 +212,7 @@ Function Enable-ExoLitigationHold {
 
         ## heading
         $html += '<table id="tbl">'
-        if ($ListOnly) {
+        if ($TestMode) {
             $html += '<tr><td class="head">[!!! TEST MODE ONLY !!!] NO CHANGES WERE MADE IN THIS RUN.</td></tr>'
         }
         else {
@@ -236,7 +236,7 @@ Function Enable-ExoLitigationHold {
 
         ## Enable Litigation Hold
         for ($i = 0 ; $i -lt ($includeMailbox.Count); $i++) {
-            if (!$ListOnly) {
+            if (!$TestMode) {
                 Set-Mailbox -Identity $includeMailbox[$i].'User ID' -LitigationHoldEnabled $true -WarningAction SilentlyContinue
                 $litHold = Get-Mailbox -Identity $includeMailbox[$i].'User ID' | Select-Object Litigationhold*
                 $includeMailbox[$i].'Hold Enabled' = $lithold.LitigationHoldEnabled
@@ -273,7 +273,9 @@ Function Enable-ExoLitigationHold {
         $html += '</table>'
         $html += '</html>'
         $html | Out-File $outputHTMLFile -Encoding UTF8
-        SayInfo "HTML Report saved in $($outputHTMLFile)"
+        if ($ReportType -eq 'HTML') {
+            SayInfo "HTML Report saved in $($outputHTMLFile)"
+        }
         SayInfo "CSV Report saved in $($outputCsvFile)"
         if ($ExclusionList) {
             SayInfo "The list of excluded mailboxes can be found in $($outputExclusionCsvList)"
