@@ -113,5 +113,11 @@ Function SendEmailByGraph {
     $mailApiUri = "https://graph.microsoft.com/$ApiVersion/users/$($From)/sendmail"
     $headerParams = @{'Authorization' = "Bearer $($Token)" }
 
-    Invoke-RestMethod -Method Post -Uri $mailApiUri -Body $mailbody -Headers $headerParams -ContentType 'application/json' -ErrorAction STOP
+    try {
+        Invoke-RestMethod -Method Post -Uri $mailApiUri -Body $mailbody -Headers $headerParams -ContentType 'application/json' -ErrorAction STOP
+    }
+    catch {
+        SayError "Send email failed: $($_.Exception.Message)"
+    }
+
 }
