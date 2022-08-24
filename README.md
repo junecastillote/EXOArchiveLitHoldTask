@@ -2,7 +2,7 @@
 
 This module enables O365 admins to keep the online archive mailbox and litigation hold enabled for eligible users in Exchange Online.
 
-## What Are the Eligible Mailboxes?
+## Which Mailboxes are Eligible?
 
 The basis of eligibility is the [Mailbox Plan](https://docs.microsoft.com/en-us/exchange/recipients-in-exchange-online/manage-user-mailboxes/mailbox-plans) assigned to the mailbox, specifically the *`ExchangeOnlineEnterprise`* mailbox plan.
 
@@ -20,36 +20,39 @@ Download the code from the main branch → ‣
 
 Or you can run this command to download and install the module in PowerShell.
 
-<aside>
-💡 *Note: If you run PowerShell as admin on Windows or as root (sudo) in Linux, the module will be installed for all users. Otherwise, the module will be installed on the current user only.
-
-Reference:
-[about_PSModulePath (Windows PowerShell 5.1)](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_psmodulepath?view=powershell-5.1)
-[about_PSModulePath (PowerShell 7.2)](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_psmodulepath?view=powershell-7.2)*
-
-</aside>
+> 💡 *Note: If you run PowerShell as admin on Windows or as root (sudo) in Linux, the module will be installed for all users. Otherwise, the module will be installed on the current user only.*
+>
+> *Reference:*
+>
+> *[about_PSModulePath (Windows PowerShell 5.1)](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_psmodulepath?view=powershell-5.1)*
+>
+> *[about_PSModulePath (PowerShell 7.2)](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_psmodulepath?view=powershell-7.2)*
 
 ```powershell
 # Download the module file (ExoArchiveLitHold.zip)
 [System.Net.WebClient]::new().DownloadFile(
-    'https://github.com/junecastillote/EXOArchiveLitHoldTask/archive/refs/heads/0.1-dev.zip',
-    $("$((Get-Location).Path)\ExoArchiveLitHold.zip")
+    'https://github.com/junecastillote/EXOArchiveLitHoldTask/archive/refs/heads/main.zip',
+    $("$((Get-Location).Path)/ExoArchiveLitHold.zip")
 )
 
 # Extract the ZIP file
 Expand-Archive ./ExoArchiveLitHold.zip ./
 
 # Run the install.ps1 script.
-./EXOArchiveLitHoldTask-0.1-dev/install.ps1
+./EXOArchiveLitHoldTask-main/install.ps1
+
+Get-Module EXOArchiveLitHoldTask -ListAvailable
 ```
+
+![Untitled](doc_images/Untitled.png)
 
 ## Functions and Parameters
 
 This module comes with two main functions.
 
-| Function | Purpose |
-| --- | --- |
-| Enable-ExoArchiveMailbox | Enable the Exchange Online Archive Mailbox for eligible users. |
+| Function                 | Purpose                                                                |
+| ------------------------ | ---------------------------------------------------------------------- |
+| Enable-ExoArchiveMailbox | Enable the Exchange Online Archive Mailbox for eligible users.         |
 | Enable-ExoLitigationHold | Enable the Exchange Online Mailbox Litigation Hold for eligible users. |
 
 Both the `Enable-ExoArchiveMailbox` and `Enable-ExoLitigationHold` have the same set of parameters, and none are required.
@@ -60,10 +63,10 @@ Both the `Enable-ExoArchiveMailbox` and `Enable-ExoLitigationHold` have the same
 - `ReportType` - Specify `CSV` or `HTML`. The default type is `CSV` if you do not specify this parameter.
 - `SendEmailByGraph` - Use this parameter if you’ll send the email report via Microsoft Graph. This email sending method is useful for organizations that disabled basic authentication for SMTP. This parameter accepts a hashtable, as shown below.
 
-    <aside>
-    💡 Note: This email method requires that you have already registered an application in Azure AD with `Mail.Send` application permission in Microsoft Graph.
 
-    </aside>
+   > 💡 *Note: This email method requires that you have already registered an application in Azure AD with `Mail.Send` application permission in Microsoft Graph.*
+
+
 
     ```powershell
     @{
@@ -142,6 +145,8 @@ $ExoArchiveMailboxTaskResult = Enable-ExoArchiveMailbox -SendEmailBySmtp $sendEm
 $ExoLitigationHoldTaskResult = Enable-ExoLitigationHold -SendEmailBySmtp $sendEmailBySmtp
 ```
 
+![Untitled](doc_images/Untitled%201.png)
+
 ### Example 2: Run in Test Mode with Email Report via Microsoft Graph with Secret Key
 
 ```powershell
@@ -217,96 +222,141 @@ $ExoLitigationHoldTaskResult = Enable-ExoLitigationHold -ReportType HTML -SendEm
 
 ```
 
-## ANNEX
+## ANNEX 1: Sample Report
 
-### Register App for App-Only Authentication in Exchange and Sending Email via Microsoft Graph
+### HTML Email
+
+![Untitled](doc_images/Untitled%202.png)
+
+![Untitled](doc_images/Untitled%203.png)
+
+### CSV File
+
+![Untitled](doc_images/Untitled%204.png)
+
+![Untitled](doc_images/Untitled%205.png)
+
+## ANNEX 2: Register App for App-Only Authentication in Exchange and Sending Email via Microsoft Graph
 
 If you’re planning to use this module in automation or unattended jobs, it is highly recommended to register an app in Azure AD and use certificate-based authentication.
 
 The application must have the following API permissions.
 
-| API | Permission | Purpose |
-| --- | --- | --- |
-| Microsoft Graph | Mail.Send | Send email using any valid email address in Exchange Online. |
-| Office 365 Exchange Online | Exchange.ManageAsApp | Manage Exchange as an Application. |
+| API                        | Permission           | Purpose                                                      |
+| -------------------------- | -------------------- | ------------------------------------------------------------ |
+| Microsoft Graph            | Mail.Send            | Send email using any valid email address in Exchange Online. |
+| Office 365 Exchange Online | Exchange.ManageAsApp | Manage Exchange as an Application.                           |
 
-#### Generate a Self-Signed Certificate on Windows
+### Create a Self-Signed Certificate
 
-1. Open PowerShell on your computer.
-2. Run the below code to generate a new self-signed certificate.
+Open PowerShell on your computer.
+
+Run the below code to generate a new self-signed certificate.
+
+```powershell
+# Generate a self-signed certificate
+$certSplat = @{
+    Subject           = 'ExoArchiveLitHoldTask'
+    NotBefore         = ((Get-Date).AddDays(-1))
+    NotAfter          = ((Get-Date).AddYears(3))
+    CertStoreLocation = "Cert:\CurrentUser\My"
+    Provider          = "Microsoft Enhanced RSA and AES Cryptographic Provider"
+    HashAlgorithm     = "SHA256"
+    KeySpec           = "KeyExchange"
+}
+$selfSignedCertificate = New-SelfSignedCertificate @certSplat
+
+# Display the certificate details
+$selfSignedCertificate | Format-List PSParentPath, ThumbPrint, Subject, NotAfter
+
+# Export the certificate to PFX.
+$selfSignedCertificate | Export-PfxCertificate -FilePath .\ExoArchiveLitHoldTask.pfx -Password $(ConvertTo-SecureString -String "Transpire^Struck8^Impurity^Draw" -AsPlainText -Force)
+
+# Export the certificate to CER.
+$selfSignedCertificate | Export-Certificate -FilePath .\ExoArchiveLitHoldTask.cer
+```
+
+### Register the App
+
+> 💡 *NOTE: This requires that you have the [Microsoft Graph PowerShell](https://docs.microsoft.com/en-us/powershell/microsoftgraph/overview) module installed on your computer.*
+
+1. Connect to Microsoft Graph PowerShell.
 
     ```powershell
-    # Generate a self-signed certificate
-    $certSplat = @{
-        Subject           = 'ExoArchiveLitHoldTask'
-        NotBefore         = ((Get-Date).AddDays(-1))
-        NotAfter          = ((Get-Date).AddYears(3))
-        CertStoreLocation = "Cert:\CurrentUser\My"
-        Provider          = "Microsoft Enhanced RSA and AES Cryptographic Provider"
-        HashAlgorithm     = "SHA256"
-        KeySpec           = "KeyExchange"
-    }
-    $selfSignedCertificate = New-SelfSignedCertificate @certSplat
-
-    # Display the certificate details
-    $selfSignedCertificate | Format-List PSParentPath, ThumbPrint, Subject, NotAfter
-
-    # Export the certificate to PFX.
-    $selfSignedCertificate | Export-PfxCertificate -FilePath .\ExoArchiveLitHoldTask.pfx -Password $(ConvertTo-SecureString -String "Transpire^Struck8^Impurity^Draw" -AsPlainText -Force)
-
-    # Export the certificate to CER.
-    $selfSignedCertificate | Export-Certificate -FilePath .\ExoArchiveLitHoldTask.cer
+    Connect-MgGraph -Scopes 'Application.ReadWrite.All RoleManagement.ReadWrite.Directory'
     ```
-
-3. Log in to the [Azure Active Directory admin](https://aad.portal.azure.com/) center and register a new app.
-
-    ![Untitled](doc_images/Untitled.png)
-
-4. Fill out the application and click **Register**.
-
-    ![Untitled](doc_images/Untitled%201.png)
-
-5. Once registered, copy the `Application (client ID)` and click **Manifest**.
-
-    ![Untitled](doc_images/Untitled%202.png)
-
-6. Look for the `"requiredResourceAccess"` node and delete its contents.
-
-    ![Untitled](doc_images/Untitled%203.png)
-
-7. Copy the code below and paste it into the manifest inside the `"requiredResourceAccess"`. Click **Save**.
-
-    ```json
-    {
-        "resourceAppId": "00000003-0000-0000-c000-000000000000",
-        "resourceAccess": [
-            {
-                "id": "b633e1c5-b582-4048-a93e-9f11b44c7e96",
-                "type": "Role"
-            }
-        ]
-    },
-    {
-        "resourceAppId": "00000002-0000-0ff1-ce00-000000000000",
-        "resourceAccess": [
-            {
-                "id": "dc50a0fb-09a3-484d-be87-e023b12c6440",
-                "type": "Role"
-            }
-        ]
-    }
-    ```
-
-    ![Untitled](doc_images/Untitled%204.png)
-
-8. Go to **Certificates & Secrets** and upload the CER file you generated earlier.
-
-    ![Untitled](doc_images/Untitled%205.png)
-
-    You can now see the certificate was uploaded to your application.
 
     ![Untitled](doc_images/Untitled%206.png)
 
-9. Finally, go to **API Permissions → click Grant admin consent** → **Yes.**
+2. Define the API permissions needed by your app. Copy the code below and run it in PowerShell. DO NOT CHANGE ANYTHING IN THE CODE!
+
+    ```powershell
+    $RequiredResourceAccess = @(
+        [ordered]@{
+            ResourceAppId  = "00000002-0000-0ff1-ce00-000000000000"; # Microsoft Graph
+            ResourceAccess = @(
+                @{
+                    Id   = "dc50a0fb-09a3-484d-be87-e023b12c6440"; # Mail.Send
+                    Type = "Role"
+                }
+            )
+
+        },
+        [ordered]@{
+            ResourceAppId  = "00000003-0000-0000-c000-000000000000"; # Office 365 Exchange Online
+            ResourceAccess = @(
+                @{
+                    Id   = "b633e1c5-b582-4048-a93e-9f11b44c7e96"; # Exchange.ManageAsApp
+                    Type = "Role"
+                }
+            )
+        }
+    )
+    ```
+
+3. Compose the certificate credentials of your application. Copy the code and run it PowerShell. DO NOT CHANGE ANYTHING IN THE CODE!
+
+    ```powershell
+    $keyCredentials = @(
+        [ordered]@{
+            EndDateTime   = $($selfSignedCertificate.NotAfter.ToUniversalTime())
+            StartDateTime = $($selfSignedCertificate.NotBefore.ToUniversalTime())
+            keyId         = $((New-Guid).Guid)
+            type          = 'AsymmetricX509Cert'
+            usage         = 'Verify'
+            displayName   = $($selfSignedCertificate.Subject)
+            key           = $selfSignedCertificate.GetRawCertData()
+        }
+    )
+    ```
+
+4. Register the app and enable the service principal. DO NOT CHANGE ANYTHING IN THE CODE!
+
+    ```powershell
+    $app = New-MgApplication -DisplayName 'ExoArchiveLitHoldTask' -RequiredResourceAccess $RequiredResourceAccess -SignInAudience AzureADMyOrg -Web @{RedirectUris = 'http://localhost' } -KeyCredentials $keyCredentials
+    $sp = New-MgServicePrincipal -AppId $app.AppId
+    ```
+
+5. Add the service principal to the ‘Exchange administrator’ role group. DO NOT CHANGE ANYTHING IN THE CODE!
+
+    ```powershell
+    $roleDefinitionId = (Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq 'Exchange Administrator'").Id
+    New-MgRoleManagementDirectoryRoleAssignment -PrincipalId $sp.Id -RoleDefinitionId $roleDefinitionId -DirectoryScopeId "/"
+    ```
+
+
+### Grant Consent
+
+1. Launch the consent URL in your default browser. Replace the `<your_tenant_domain>` with your O365 tenant domain. For example, `contoso.onmicrosoft.com`.
+
+    ```powershell
+    Start-Process "https://login.microsoftonline.com/<your_tenant_domain>/adminconsent?client_id=$($app.AppID)"
+    ```
+
+2. Accept the permission request.
 
     ![Untitled](doc_images/Untitled%207.png)
+
+3. Close the web browser. Don’t worry about the 404 error. That’s expected.
+
+    ![Untitled](doc_images/Untitled%208.png)

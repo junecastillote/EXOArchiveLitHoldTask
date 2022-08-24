@@ -1,4 +1,4 @@
-testData.ps1
+testData*
 *.pfx
 *.cer
 selfsigned.ps1
