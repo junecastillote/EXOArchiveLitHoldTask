@@ -57,8 +57,8 @@ This module comes with two main functions.
 
 Both the `Enable-ExoArchiveMailbox` and `Enable-ExoLitigationHold` have the same set of parameters, and none are required.
 
-- `TestMode` - This is a *`**Boolean**`* parameter. If the value is `$True` (default), the command will only report the eligible mailboxes without making any changes. This mode is useful to test the task first and create a report of eligible users without an archive mailbox or with a disabled litigation hold.
-- `ExclusionList` - This optional parameter accepts an *`**array**`* of email addresses of the mailboxes to be excluded from the task. Do not use this parameter if you don’t want to exclude any mailbox.
+- `TestMode` - This is a *`Boolean`* parameter. If the value is *`$True`* (default), the command will only report the eligible mailboxes without making any changes. This mode is useful to test the task first and create a report of eligible users without an archive mailbox or with a disabled litigation hold.
+- `ExclusionList` - This optional parameter accepts an *`array`* of email addresses of the mailboxes to be excluded from the task. Do not use this parameter if you don’t want to exclude any mailbox.
 - `ReportDirectory` - Specify the output directory where the task will save the reports. If you do not specify this parameter, the default location will be: `$HOME\ExoArchiveLitHoldTask\<tenant_domain>`.
 - `ReportType` - Specify `CSV` or `HTML`. The default type is `CSV` if you do not specify this parameter.
 - `SendEmailByGraph` - Use this parameter if you’ll send the email report via Microsoft Graph. This email sending method is useful for organizations that disabled basic authentication for SMTP. This parameter accepts a hashtable, as shown below.
