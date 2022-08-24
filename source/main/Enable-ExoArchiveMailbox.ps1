@@ -2,7 +2,7 @@ Function Enable-EXOArchiveMailbox {
     [cmdletbinding()]
     Param(
         [parameter()]
-        [boolean]$ListOnly = $true,
+        [boolean]$TestMode = $true,
 
         [parameter()]
         [string[]]$ExclusionList = @(),
@@ -153,8 +153,8 @@ Function Enable-EXOArchiveMailbox {
     }
     SayInfo "Report Directory: $ReportDirectory"
 
-    if ($ListOnly) {
-        SayInfo "ListOnly is specified. Running on test mode only. No changes will be made."
+    if ($TestMode) {
+        SayInfo "TestMode is specified. Running on test mode only. No changes will be made."
     }
 
     $subject = "Enable Exchange Online Archive Mailbox Task Report"
@@ -211,7 +211,7 @@ Function Enable-EXOArchiveMailbox {
 
         ## heading
         $html += '<table id="tbl">'
-        if ($ListOnly) {
+        if ($TestMode) {
             $html += '<tr><td class="head">[!!! TEST MODE ONLY !!!] NO CHANGES WERE MADE IN THIS RUN.</td></tr>'
         }
         else {
@@ -235,7 +235,7 @@ Function Enable-EXOArchiveMailbox {
 
         ## Enable Archive
         for ($i = 0 ; $i -lt ($includeMailbox.Count); $i++) {
-            if (!$ListOnly) {
+            if (!$TestMode) {
                 $archive = Enable-Mailbox -Identity $includeMailbox[$i].'User ID' -Archive -WarningAction SilentlyContinue
                 $includeMailbox[$i].'Archive GUID' = $archive.ArchiveGUID
 
@@ -268,7 +268,9 @@ Function Enable-EXOArchiveMailbox {
         $html += '</table>'
         $html += '</html>'
         $html | Out-File $outputHTMLFile -Encoding UTF8
-        SayInfo "HTML Report saved in $($outputHTMLFile)"
+        if ($ReportType -eq 'HTML') {
+            SayInfo "HTML Report saved in $($outputHTMLFile)"
+        }
         SayInfo "CSV Report saved in $($outputCsvFile)"
         if ($ExclusionList) {
             SayInfo "The list of excluded mailboxes can be found in $($outputExclusionCsvList)"
