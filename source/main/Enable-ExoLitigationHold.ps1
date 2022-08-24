@@ -14,24 +14,73 @@ Function Enable-ExoLitigationHold {
         [ValidateSet('HTML', 'CSV')]
         $ReportType = 'CSV',
 
+        [parameter()]
         <# Hashtable with these keys and values
         @{
-            ClientId            = '<application id>'
-            TenantId            = '<your_domain.onmicrosoft.com>'
-            CertificateOrSecret = <Client Secret> -OR- (Get-Item cert:\CurrentUser\my\<certificate thumbprint>)
-            From                = 'Sender@your_domain.com'
-            To                  = 'Recipient1@your_domain.com','Recipient2@your_domain.com'
-            CC                  = '<OPTIONAL CC Recipients>'
-            Bcc                 = '<OPTIONAL BCC Recipients>'
+            ClientId            = '<application id>' # Mandatory
+            TenantId            = '<your_domain.onmicrosoft.com>' # Mandatory
+            CertificateOrSecret = <Client Secret> -OR- (Get-Item cert:\CurrentUser\my\<certificate thumbprint>) # Mandatory
+            From                = 'Sender@your_domain.com' # Mandatory
+            To                  = 'Recipient1@your_domain.com','Recipient2@your_domain.com' # Mandatory
+            CC                  = '<OPTIONAL CC Recipients>' # Optional
+            Bcc                 = '<OPTIONAL BCC Recipients>' # Optional
+        }
         #>
+        [hashtable]$SendEmailByGraph,
+
         [parameter()]
-        [hashtable]$SendEmailByGraph
+        <# Hashtable with these keys and values
+        @{
+            SmtpServer          = '<you_smtp_server_address>' # Mandatory
+            Port                = '<Port>' # Optional, if port is not 25
+            UseSSL              = '$true or $false' # Optional, whether SMTP server requires TLS connection
+            Credential          = '<PSCredential>' # Optional, use only if the SMTP server requires authentication
+            From                = 'Sender@your_domain.com' # Mandatory
+            To                  = 'Recipient1@your_domain.com', 'Recipient2@your_domain.com' # Mandatory
+            CC                  = '<OPTIONAL CC Recipients>' # Optional
+            Bcc                 = '<OPTIONAL BCC Recipients>' # Optional
+        }
+        #>
+        [hashtable]$SendEmailBySmtp
     )
+
+    Say ""
+    SayInfo "=====Enable Exchange Online Mailbox Litigation Hold Task====="
+
+    if ($PSBoundParameters.ContainsKey('SendEmailByGraph') -and $PSBoundParameters.ContainsKey('SendEmailBySmtp')) {
+        SayWarning "Do not specify SendEmailByGraph and SendEmailBySmtp. Choose only one."
+        return $null
+    }
 
     $thisModule = $MyInvocation.MyCommand.Module
     $tz = ([System.TimeZoneInfo]::Local).DisplayName.ToString().Split(" ")[0]
     $today = Get-Date -Format "MMMM dd, yyyy hh:mm tt"
     $css_string = Get-Content $([System.IO.Path]::Combine($thisModule.ModuleBase, 'source', 'css', 'style.css')) -Raw
+
+    # Validate the -SendEmailBySmtp parameter hashtable
+    if ($PSBoundParameters.ContainsKey('SendEmailBySmtp')) {
+        if (!$SendEmailBySmtp['SmtpServer'] -or
+            !$SendEmailBySmtp['From'] -or
+            !$SendEmailBySmtp['To']) {
+
+            SayError "The SendEmailBySmtp hashtable requires the following keys to be present and with value: SmtpServer, From, To"
+
+            Say "Example:
+            -SendEmailBySmtp @{
+                SmtpServer          = '<you_smtp_server_address>' # Mandatory
+                Port                = '<Port>' # Optional, if port is not 25
+                UseSSL              = '$true or $false' # Optional, whether SMTP server requires TLS connection
+                Credential          = '<PSCredential>' # Optional, use only if the SMTP server requires authentication
+                From                = 'Sender@your_domain.com' # Mandatory
+                To                  = 'Recipient1@your_domain.com', 'Recipient2@your_domain.com' # Mandatory
+                CC                  = '<OPTIONAL CC Recipients>' # Optional
+                Bcc                 = '<OPTIONAL BCC Recipients>' # Optional
+            }"
+            # Terminate
+            return $null
+        }
+        $smtpEmailParamsValid = $true
+    }
 
     # Validate the -SendEmailByGraph parameter hashtable
     if ($PSBoundParameters.ContainsKey('SendEmailByGraph')) {
@@ -228,6 +277,30 @@ Function Enable-ExoLitigationHold {
         SayInfo "CSV Report saved in $($outputCsvFile)"
         if ($ExclusionList) {
             SayInfo "The list of excluded mailboxes can be found in $($outputExclusionCsvList)"
+        }
+
+        if ($smtpEmailParamsValid) {
+            SayInfo 'Sending email..'
+            $mailParams = @{
+                SmtpServer = $SendEmailBySmtp['SmtpServer']
+                To         = $SendEmailBySmtp['To']
+                From       = $SendEmailBySmtp['From']
+                Subject    = "[$($Organization)] $subject"
+                Body       = (Get-Content $outputHTMLFile -Raw -Encoding UTF8)
+            }
+
+            if ($SendEmailBySmtp['Port']) { $mailParams += @{Port = $SendEmailBySmtp['Port'] } }
+            if ($SendEmailBySmtp['Credential']) { $mailParams += @{Credential = $SendEmailBySmtp['Credential'] } }
+            if ($SendEmailBySmtp['UseSSL']) { $mailParams += @{UseSSL = $SendEmailBySmtp['UseSSL'] } }
+
+            $attachment_list = @()
+            if ($reportType -eq 'CSV') { $attachment_list += $outputCsvFile }
+            if ($excludeCount -gt 0) { $attachment_list += $outputExclusionCsvList }
+
+            if ($attachment_list.count -gt 0) {
+                $mailParams += @{Attachments = $attachment_list }
+            }
+            SendEmailBySmtp @mailParams
         }
 
         if ($graphEmailParamsValid) {
