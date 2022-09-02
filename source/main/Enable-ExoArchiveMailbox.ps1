@@ -175,6 +175,7 @@ Function Enable-EXOArchiveMailbox {
     Select-Object @{n = 'Display Name'; e = { $_.DisplayName } },
     @{n = 'User ID'; e = { $_.UserPrincipalName } },
     @{n = 'Email Address'; e = { $_.PrimarySMTPAddress } },
+    @{n = 'Mailbox Type'; e = { $_.RecipientTypeDetails } },
     @{n = 'Archive GUID'; e = { $_.ArchiveGUID } },
     @{n = 'Mailbox Plan'; e = { $_.MailboxPlan } },
     @{n = 'Mailbox Created Date'; e = { '{0:yyyy/MM/dd}' -f $_.WhenMailboxCreated } },
@@ -230,7 +231,7 @@ Function Enable-EXOArchiveMailbox {
 
         ## If HTML Table Report
         if ($reportType -eq 'HTML') {
-            $html += '<tr><th>Name</th><th>Email Address</th><th>Archive GUID</th><th>Mailbox Created Date</th></tr>'
+            $html += '<tr><th>Name</th><th>Email Address</th><th>Mailbox Type</th><th>Archive GUID</th><th>Mailbox Created Date</th></tr>'
         }
 
         ## Enable Archive
@@ -250,11 +251,12 @@ Function Enable-EXOArchiveMailbox {
             if ($reportType -eq 'HTML') {
                 $html += "<tr><td>$($includeMailbox[$i].'Display Name')</td>"
                 $html += "<td>$($includeMailbox[$i].'Email Address')</td>"
+                $html += "<td>$($includeMailbox[$i].'Mailbox Type')</td>"
                 $html += "<td>$($includeMailbox[$i].'Archive GUID')</td>"
                 $html += "<td>$($includeMailbox[$i].'Mailbox Created Date')</td>"
             }
         }
-        $includeMailbox | Where-Object { !$_.Excluded } | Select-Object 'Display Name', 'Email Address', 'Archive GUID', 'Mailbox Created Date' | Export-Csv -NoTypeInformation $outputCsvFile -Force
+        $includeMailbox | Where-Object { !$_.Excluded } | Select-Object 'Display Name', 'Email Address', 'Mailbox Type', 'Archive GUID', 'Mailbox Created Date' | Export-Csv -NoTypeInformation $outputCsvFile -Force
 
         $html += '</table>'
         $html += '<table id="tbl">'
