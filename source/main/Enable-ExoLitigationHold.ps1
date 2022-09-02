@@ -175,6 +175,7 @@ Function Enable-ExoLitigationHold {
     Select-Object @{n = 'Display Name'; e = { $_.DisplayName } },
     @{n = 'User ID'; e = { $_.UserPrincipalName } },
     @{n = 'Email Address'; e = { $_.PrimarySMTPAddress } },
+    @{n = 'Mailbox Type'; e = { $_.RecipientTypeDetails } },
     @{n = 'Hold Enabled'; e = { $_.LitigationHoldEnabled } },
     @{n = 'Hold Duration'; e = { $_.LitigationHoldDuration } },
     @{n = 'Hold Owner'; e = { $_.LitigationHoldOwner } },
@@ -231,7 +232,7 @@ Function Enable-ExoLitigationHold {
 
         ## If HTML Table Report
         if ($reportType -eq 'HTML') {
-            $html += '<tr><th>Name</th><th>Email Address</th><th>Hold Enabled</th><th>Hold Date</th><th>Mailbox Created Date</th></tr>'
+            $html += '<tr><th>Name</th><th>Email Address</th><th>Mailbox Type</th><th>Hold Enabled</th><th>Hold Date</th><th>Mailbox Created Date</th></tr>'
         }
 
         ## Enable Litigation Hold
@@ -254,12 +255,13 @@ Function Enable-ExoLitigationHold {
             if ($reportType -eq 'HTML') {
                 $html += "<tr><td>$($includeMailbox[$i].'Display Name')</td>"
                 $html += "<td>$($includeMailbox[$i].'Email Address')</td>"
+                $html += "<td>$($includeMailbox[$i].'Mailbox Type')</td>"
                 $html += "<td>$($includeMailbox[$i].'Hold Enabled')</td>"
                 $html += "<td>$('{0:yyyy/MM/dd}' -f $includeMailbox[$i].'Hold Date')</td>"
                 $html += "<td>$($includeMailbox[$i].'Mailbox Created Date')</td>"
             }
         }
-        $includeMailbox | Where-Object { !$_.Excluded } | Select-Object 'Display Name', 'Email Address', 'Hold Enabled', 'Hold Owner', 'Hold Date', 'Mailbox Created Date' | Export-Csv -NoTypeInformation $outputCsvFile -Force
+        $includeMailbox | Where-Object { !$_.Excluded } | Select-Object 'Display Name', 'Email Address', 'Mailbox Type', 'Hold Enabled', 'Hold Owner', 'Hold Date', 'Mailbox Created Date' | Export-Csv -NoTypeInformation $outputCsvFile -Force
 
         $html += '</table>'
         $html += '<table id="tbl">'
