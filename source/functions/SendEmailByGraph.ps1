@@ -119,5 +119,4 @@ Function SendEmailByGraph {
     catch {
         SayError "Send email failed: $($_.Exception.Message)"
     }
-
 }
