@@ -2,3 +2,4 @@ testData*
 *.pfx
 *.cer
 selfsigned.ps1
+test*
